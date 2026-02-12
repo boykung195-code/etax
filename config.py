@@ -61,4 +61,6 @@ class Config:
     # --- Paths ---
     BASE_DIR = os.path.dirname(__file__)
     OUTPUT_JSON_DIR = os.path.join(BASE_DIR, "etax_data", "output_json")
+    SUBMITTED_JSON_DIR = os.path.join(BASE_DIR, "etax_data", "submitted_json")
+    UPLOAD_DIR = os.path.join(BASE_DIR, "etax_data", "uploads")
     MASTER_DIR = os.path.join(BASE_DIR, "Master")

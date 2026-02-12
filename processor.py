@@ -1,6 +1,17 @@
 import pandas as pd
 import os
 import re
+import json
+import logging
+
+# Setup logger
+logger = logging.getLogger(__name__)
+if not logger.handlers:
+    handler = logging.StreamHandler()
+    formatter = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
+    handler.setFormatter(formatter)
+    logger.addHandler(handler)
+    logger.setLevel(logging.INFO)
 
 def clean_numeric(val):
     if pd.isna(val) or val == '':
@@ -11,6 +22,38 @@ def clean_numeric(val):
         return float(val)
     except ValueError:
         return 0.0
+
+def format_json_date(date_str):
+    """Formats date/datetime to DDMMYYYY for JSON submission."""
+    if pd.isna(date_str) or not str(date_str).strip():
+        return ""
+    clean_date = str(date_str).replace('/', '').replace('-', '').strip()
+    try:
+        # Case: Already DDMMYYYY
+        if len(clean_date) == 8 and clean_date.isdigit():
+            day = clean_date[0:2]
+            month = clean_date[2:4]
+            year = int(clean_date[4:8])
+            if year > 2400: year = year - 543
+            return f"{day}{month}{year}"
+        # Case: Pandas datetime
+        dt = pd.to_datetime(date_str, dayfirst=True)
+        year = dt.year
+        if year > 2400: year = year - 543
+        return dt.strftime(f'%d%m{year}')
+    except:
+        return clean_date
+
+def get_template_name(doc_no):
+    """Determines template code from document number suffix."""
+    doc_str = str(doc_no).strip()
+    if len(doc_str) >= 6:
+        code = doc_str[4:6]
+        if code == "61": return "1"
+        elif code == "64": return "2"
+        elif code == "66": return "3"
+    return doc_str
+
 
 def load_csv(path):
     # Support for Excel files
@@ -339,6 +382,158 @@ def process_etax(transaction_path, master_dir, output_path=None):
         output_df.to_csv(output_path, index=False, encoding='utf-8-sig')
     
     return output_df
+
+def save_to_individual_json(df_result, output_dir):
+    """
+    Saves a processed DataFrame into individual JSON files (1 per invoice)
+    matching the refined structure in convert_etax.py.
+    """
+    if not os.path.exists(output_dir):
+        os.makedirs(output_dir)
+
+    mapping_hdr = {
+        "COMPANY": "รหัสบริษัท",
+        "OPERATION_CODE": "ชื่อสาขา_บริษัท",
+        "COM_TAX_ID": "เลขประจำตัวผู้เสียภาษีของบริษัท",
+        "DOC_NUMBER": "เลขที่ใบแจ้งหนี้2",
+        "DOC_DATE": "วันที่ใบแจ้งหนี้",
+        "CV_CODE": "รหัสลูกค้า",        
+        "BILL_NAME": "ชื่อลูกค้า",
+        "CV_SHORT_NAME": "ชื่อสาขา",   
+        "TAX_ID": "เลขประจำตัวผู้เสียภาษีของลูกค้า", 
+        "CV_SEQ": "สาขาที่",
+        "BILL_ADDRESS1": "ที่อยู่ลูกค้า", 
+        "COM_NAME_LOCAL": "ชื่อบริษัท", 
+        "COM_ADDRESS1": "ที่อยู่บริษัท",  
+        "NETT_AMT": "จำนวนเงินสุทธิ",
+        "TAX_AMT": "VAT",
+        "TOTAL_NETT": "จำนวนเงิน",
+        "GROSS_AMT": "จำนวนเงินสุทธิ",
+        "REMARK_TEXT1": "เลขที่ใบแจ้งหนี้2",
+        "PRINT_FORM_TEMPLATE": "เลขที่ใบแจ้งหนี้2",
+        "REF_DOC_NUMBER": "อ้างอิงใบกำกับภาษีเลขที่",
+        "REF_DOC_DATE": "วันที่เอกสารอ้างอิง",
+        "TRN_NAME": "สาเหตุ",
+        "REF_DOC_AMT": "มูลค่าตามใบกำกับภาษีเดิม",
+        "RIGHT_AMT": "มูลค่าที่ถูกต้อง"
+    }
+
+    mapping_dtl = {
+        "PRODUCT_NAME": "เลขที่ใบแจ้งหนี้_ชื่อสินค้า_ทะเบียนรถ",
+        "COSTPRICE_QTY": "ปริมาณ",
+        "GROSS_PRODUCT": "ราคาต่อหน่วย",
+        "TOTAL_NET_PRODUCT": "จำนวนเงินสุทธิ" 
+    }
+
+    # Use DOC_NUMBER as grouping key
+    invoice_key = "เลขที่ใบแจ้งหนี้2"
+    invoice_buckets = {}
+
+    for _, row in df_result.iterrows():
+        raw_doc_no = row.get(invoice_key)
+        if pd.isna(raw_doc_no):
+            continue
+        
+        doc_no = str(raw_doc_no).strip().split('.')[0]
+        
+        if doc_no not in invoice_buckets:
+            # Create Header (initialize with base info from first row)
+            header_data = {
+                "TAX_REGISTER_TYPE": "01",
+                "E_TAX_PARTICIPATE": "Y"
+            }
+            # Initialize numeric sum fields to 0.0
+            sum_fields = ["NETT_AMT", "TAX_AMT", "TOTAL_NETT", "GROSS_AMT", "REF_DOC_AMT", "RIGHT_AMT"]
+            
+            for json_key, excel_col in mapping_hdr.items():
+                val = row.get(excel_col, "")
+                
+                # Apply high-fidelity formatting (13-digit IDs, etc.)
+                if json_key == "COMPANY": val = str(val).strip()[:6]
+                elif json_key == "COM_TAX_ID": 
+                    if pd.notna(val):
+                        val = str(val).strip().split('.')[0].zfill(13)[:13]
+                    else:
+                        val = ""
+                elif json_key == "DOC_NUMBER": val = str(val).strip()[:20]
+                elif json_key == "CV_CODE": val = str(val).strip()[:20]
+                elif json_key == "TAX_ID": 
+                    if pd.notna(val):
+                        val = str(val).strip().split('.')[0].zfill(13)[:13]
+                    else:
+                        val = ""
+                elif json_key in ["DOC_DATE", "REF_DOC_DATE"]:
+                    val = format_json_date(val)
+                elif json_key == "PRINT_FORM_TEMPLATE":
+                    val = get_template_name(val)
+                elif json_key == "CV_SEQ":
+                    if pd.notna(val):
+                        val = str(val).strip().split('.')[0].zfill(5)
+                elif json_key in sum_fields:
+                    val = 0.0 # Force initialization to zero for accumulation
+                
+                header_data[json_key] = val
+            
+            invoice_buckets[doc_no] = {
+                "ET_INVOICE_HDR": [header_data],
+                "ET_INVOICE_DTL": []
+            }
+
+        # Accumulate sums into the existing Header reference
+        h = invoice_buckets[doc_no]["ET_INVOICE_HDR"][0]
+        sum_fields = ["NETT_AMT", "TAX_AMT", "TOTAL_NETT", "GROSS_AMT", "REF_DOC_AMT", "RIGHT_AMT"]
+        for json_key, excel_col in mapping_hdr.items():
+            if json_key in sum_fields:
+                val = row.get(excel_col, 0)
+                try:
+                    # Clean the value (handle string formatting, commas, etc.)
+                    cleaned_val = str(val).replace(',', '').strip()
+                    if cleaned_val == '' or cleaned_val.lower() == 'nan':
+                        val_num = 0.0
+                    else:
+                        val_num = float(cleaned_val)
+                    
+                    # Add to previous total
+                    current_total = h.get(json_key, 0.0)
+                    h[json_key] = round(current_total + val_num, 2)
+                    
+                    # For LARGE documents, only log first few items to avoid log bloat
+                    if len(invoice_buckets[doc_no]["ET_INVOICE_DTL"]) < 3:
+                        logger.debug(f"DEBUG: Doc {doc_no} Key {json_key} adding {val_num} -> New Total {h[json_key]}")
+                except Exception as e:
+                    logger.warning(f"Failed to aggregate {json_key} for {doc_no}: {e}")
+                    pass
+
+        # Update Detail
+        detail_data = {
+            "COMPANY": str(row.get("รหัสบริษัท", "")).strip()[:6],
+            "DOC_NUMBER": doc_no[:20],
+            "EXT_NUMBER": len(invoice_buckets[doc_no]["ET_INVOICE_DTL"]) + 1
+        }
+        for json_key, excel_col in mapping_dtl.items():
+            val = row.get(excel_col, "")
+            if json_key in ["COSTPRICE_QTY", "GROSS_PRODUCT", "TOTAL_NET_PRODUCT"]:
+                try:
+                    val_num = float(str(val).replace(',', '').strip())
+                    detail_data[json_key] = round(val_num, 2)
+                except:
+                    detail_data[json_key] = 0.0
+            else:
+                detail_data[json_key] = val
+            
+        invoice_buckets[doc_no]["ET_INVOICE_DTL"].append(detail_data)
+
+    # Save to JSON
+    saved_files = []
+    for doc_no, data in invoice_buckets.items():
+        file_name = f"{doc_no}.json"
+        save_path = os.path.join(output_dir, file_name)
+        with open(save_path, 'w', encoding='utf-8') as f:
+            json.dump([data], f, ensure_ascii=False, indent=2)
+        saved_files.append(file_name)
+    
+    return saved_files
+
 
 if __name__ == "__main__":
     t_path = r'd:\Project\Etax\รายงานใบเติมน้ำมัน.csv'

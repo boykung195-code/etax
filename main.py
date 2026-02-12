@@ -8,7 +8,7 @@ import os
 import json
 import logging
 import traceback
-from processor import process_etax
+from processor import process_etax, save_to_individual_json
 
 # Setup Logging
 logging.basicConfig(level=logging.INFO)
@@ -25,6 +25,9 @@ app.add_middleware(
 )
 
 MASTER_DIR = r'd:\Project\Etax\Master'
+DATA_DIR = r'd:\Project\Etax\etax_data'
+OUTPUT_JSON_DIR = os.path.join(DATA_DIR, 'output_json')
+UPLOAD_DIR = os.path.join(DATA_DIR, 'uploads')
 
 # Serve Static Files
 if not os.path.exists("static"):
@@ -57,21 +60,31 @@ async def upload_file(file: UploadFile = File(...)):
         if not ext:
             ext = '.csv' # Default fallback
             
-        temp_path = f"temp_transaction{ext}"
+        from datetime import datetime
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+        filename = f"upload_{timestamp}{ext}"
+        archive_path = os.path.join(UPLOAD_DIR, filename)
         
-        with open(temp_path, "wb") as f:
+        # Save to archive
+        with open(archive_path, "wb") as f:
             f.write(content)
+        logger.info(f"Archived uploaded file to {archive_path}")
             
-        processed_df = process_etax(temp_path, MASTER_DIR)
+        processed_df = process_etax(archive_path, MASTER_DIR)
         
-        if os.path.exists(temp_path):
-            os.remove(temp_path)
+        # New: Automatically generate individual JSONs for API submission
+        saved_jsons = save_to_individual_json(processed_df, OUTPUT_JSON_DIR)
+        logger.info(f"Generated {len(saved_jsons)} individual JSON files in {OUTPUT_JSON_DIR}")
             
         first_match = processed_df['สถานะการจับคู่'].iloc[0] if len(processed_df) > 0 else 'EMPTY'
         logger.info(f"Processed {len(processed_df)} rows. Status sample: {first_match}")
         
         data = processed_df.to_dict(orient='records')
-        return {"status": "success", "data": data}
+        return {
+            "status": "success", 
+            "data": data,
+            "json_count": len(saved_jsons)
+        }
     except Exception as e:
         logger.error(f"Error processing upload: {str(e)}")
         logger.error(traceback.format_exc())
@@ -125,7 +138,7 @@ async def export_csv(request: Request):
             return JSONResponse(status_code=400, content={"status": "error", "message": "Invalid or empty data format"})
         
         df = pd.DataFrame(data)
-        file_path = "etax_export.csv"
+        file_path = os.path.join(DATA_DIR, "etax_export.csv")
         df.to_csv(file_path, index=False, encoding='utf-8-sig')
         
         return FileResponse(file_path, filename="etax_export.csv", media_type="text/csv")
@@ -149,7 +162,7 @@ async def export_excel(request: Request):
             return JSONResponse(status_code=400, content={"status": "error", "message": "Invalid or empty data format"})
         
         df = pd.DataFrame(data)
-        file_path = "etax_export.xlsx"
+        file_path = os.path.join(DATA_DIR, "etax_export.xlsx")
         
         # Save as Excel using openpyxl engine
         df.to_excel(file_path, index=False, engine='openpyxl')
@@ -249,7 +262,10 @@ async def api_submit_batch(request: Request):
     try:
         body = await request.json()
         json_dir = body.get("json_dir", None)
-        results = etax_service.process_and_submit_batch(json_dir)
+        
+        # Run blocking batch submission in a separate thread to keep server responsive
+        import anyio
+        results = await anyio.to_thread.run_sync(etax_service.process_and_submit_batch, json_dir)
 
         success_count = sum(1 for r in results if r.get("status") == "success")
         error_count = sum(1 for r in results if r.get("status") == "error")

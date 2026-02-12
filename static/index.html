@@ -48,6 +48,7 @@
             font-weight: 600;
             background: linear-gradient(to right, #fff, #9b59b6);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
             margin-bottom: 0.5rem;
         }
@@ -284,6 +285,42 @@
         ::-webkit-scrollbar-thumb:hover {
             background: var(--accent);
         }
+
+        .log-section {
+            display: none;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin-top: 2rem;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .log-item {
+            padding: 1rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .log-item:last-child {
+            border-bottom: none;
+        }
+
+        .log-status {
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+
+        .log-msg {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+            flex-grow: 1;
+            margin-left: 2rem;
+        }
     </style>
 </head>
 
@@ -317,19 +354,31 @@
                         style="margin-top: 0; background: var(--border); color: var(--text-main);">Clear Data</button>
                     <button class="btn" id="save-excel-btn" style="margin-top: 0; background: #27ae60;">Save to
                         Excel</button>
+                    <button class="btn" id="submit-axons-btn" style="margin-top: 0; background: #e67e22;">Submit to
+                        Axons</button>
                     <button class="btn" id="save-csv-btn" style="margin-top: 0; background: var(--accent);">Save to
                         CSV</button>
                     <button class="btn" id="export-btn" style="margin-top: 0; background: var(--success);">Export to
                         JSON</button>
                 </div>
             </div>
-            <div class="table-container">
-                <table id="results-table">
-                    <thead></thead>
-                    <tbody id="results-body"></tbody>
-                </table>
-            </div>
-        </section>
+    </div>
+    <div class="table-container">
+        <table id="results-table">
+            <thead></thead>
+            <tbody id="results-body"></tbody>
+        </table>
+    </div>
+
+    <div class="log-section" id="log-section">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 1rem;">
+            <h3>Submission Log</h3>
+            <button class="btn" onclick="document.getElementById('log-section').style.display='none'"
+                style="background: var(--border); padding: 0.4rem 1rem; font-size: 0.7rem;">Close Log</button>
+        </div>
+        <div id="log-container"></div>
+    </div>
+    </section>
     </div>
 
     <script>
@@ -502,6 +551,67 @@
                     alert('Excel Export failed: ' + errMsg);
                 }
             } catch (error) { alert('Excel Export error: ' + error.message); console.error(error); }
+            finally { btn.innerText = originalText; btn.disabled = false; }
+        });
+
+        document.getElementById('submit-axons-btn').addEventListener('click', async () => {
+            if (lastProcessedData.length === 0) return;
+            const btn = document.getElementById('submit-axons-btn');
+            const originalText = btn.innerText;
+
+            if (!confirm('Are you sure you want to SUBMIT all documents to Axons / Revenue Department?')) {
+                return;
+            }
+
+            btn.innerText = 'Submitting...'; btn.disabled = true;
+            try {
+                const response = await fetch('/api/submit-batch', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({}) // Uses documents in output_json
+                });
+
+                const result = await response.json();
+
+                if (response.ok) {
+                    alert(`Submission Completed!\nTotal: ${result.total}\nSuccess: ${result.success}\nErrors: ${result.errors}`);
+
+                    // Populate Log
+                    const logSection = document.getElementById('log-section');
+                    const logContainer = document.getElementById('log-container');
+                    logContainer.innerHTML = '';
+                    logSection.style.display = 'block';
+
+                    result.results.forEach(res => {
+                        const item = document.createElement('div');
+                        item.className = 'log-item';
+
+                        const isSuccess = res.status === 'success';
+                        const statusColor = isSuccess ? '#2ecc71' : '#e74c3c';
+                        const statusIcon = isSuccess ? '✅' : '❌';
+
+                        let msg = '';
+                        if (isSuccess) {
+                            msg = `Doc: ${res.doc_number} | HTTP ${res.submission?.http_status || '200'} - ${res.submission?.response?.message || 'Success'}`;
+                        } else {
+                            msg = `Doc: ${res.doc_number} | Error: ${res.error || 'Unknown Error'}`;
+                        }
+
+                        item.innerHTML = `
+                            <span style="width: 120px">${statusIcon} <span style="color: ${statusColor}">${res.status.toUpperCase()}</span></span>
+                            <span class="log-msg">${msg}</span>
+                        `;
+                        logContainer.appendChild(item);
+                    });
+
+                    logSection.scrollIntoView({ behavior: 'smooth' });
+                } else {
+                    alert('Submission failed: ' + (result.message || 'Unknown error'));
+                }
+            } catch (error) {
+                alert('Submission error: ' + error.message);
+                console.error(error);
+            }
             finally { btn.innerText = originalText; btn.disabled = false; }
         });
 

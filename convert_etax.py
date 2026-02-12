@@ -44,11 +44,6 @@ def convert_excel_to_individual_json(export_file_path, output_dir):
     อ่านไฟล์ Excel/CSV และบันทึกเป็น JSON แยกตามเลขที่ใบแจ้งหนี้
     """
     try:
-        if export_file_path.endswith('.csv'):
-            df_export = pd.read_csv(export_file_path, encoding='utf-8-sig')
-        else:
-            df_export = pd.read_excel(export_file_path)
-            
         mapping_hdr = {
             "COMPANY": "รหัสบริษัท",
             "OPERATION_CODE": "ชื่อสาขา_บริษัท",
@@ -61,6 +56,7 @@ def convert_excel_to_individual_json(export_file_path, output_dir):
             "TAX_ID": "เลขประจำตัวผู้เสียภาษีของลูกค้า", 
             "CV_SEQ": "สาขาที่",
             "BILL_ADDRESS1": "ที่อยู่ลูกค้า", 
+            "COM_NAME_LOCAL": "ชื่อบริษัท", 
             "COM_NAME_LOCAL": "ชื่อบริษัท", 
             "COM_ADDRESS1": "ที่อยู่บริษัท",  
             "NETT_AMT": "จำนวนเงินสุทธิ",
@@ -75,6 +71,16 @@ def convert_excel_to_individual_json(export_file_path, output_dir):
             "REF_DOC_AMT": "มูลค่าตามใบกำกับภาษีเดิม",
             "RIGHT_AMT": "มูลค่าที่ถูกต้อง"
         }
+
+        if export_file_path.endswith('.csv'):
+            df_export = pd.read_csv(export_file_path, encoding='utf-8-sig')
+        else:
+            # กำหนด dtype เพื่อป้องกันไม่ให้ pandas ตัดเลข 0 ข้างหน้า
+            df_export = pd.read_excel(export_file_path, dtype={
+                mapping_hdr["COM_TAX_ID"]: str,
+                mapping_hdr["TAX_ID"]: str,
+                mapping_hdr["CV_SEQ"]: str
+            })
 
         mapping_dtl = {
             "PRODUCT_NAME": "เลขที่ใบแจ้งหนี้_ชื่อสินค้า_ทะเบียนรถ",
@@ -106,10 +112,18 @@ def convert_excel_to_individual_json(export_file_path, output_dir):
                     val = row.get(excel_col, "")
                     
                     if json_key == "COMPANY": val = str(val).strip()[:6]
-                    elif json_key == "COM_TAX_ID": val = str(val).strip()[:250]
+                    elif json_key == "COM_TAX_ID": 
+                        if pd.notna(val):
+                            val = str(val).strip().split('.')[0].zfill(13)[:13]
+                        else:
+                            val = ""
                     elif json_key == "DOC_NUMBER": val = str(val).strip()[:20]
                     elif json_key == "CV_CODE": val = str(val).strip()[:20]
-                    elif json_key == "TAX_ID": val = str(val).strip()[:50]
+                    elif json_key == "TAX_ID": 
+                        if pd.notna(val):
+                            val = str(val).strip().split('.')[0].zfill(13)[:13]
+                        else:
+                            val = ""
                     elif json_key == "REMARK_TEXT1": val = str(val).strip()[:1024]
                     elif json_key == "REF_DOC_NUMBER": val = str(val).strip()[:20]
                     elif json_key == "TRN_NAME": val = str(val).strip()[:250]

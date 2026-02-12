@@ -570,6 +570,18 @@ class AxonsETaxService:
         
         logger.info(f"Submitting {doc_type} to {url}")
         
+        # Archive the submitted JSON for review
+        try:
+            doc_id = etda_json.get("ExchangedDocument", {}).get("ID", f"unknown_{int(datetime.now().timestamp())}")
+            archive_path = os.path.join(self.config.SUBMITTED_JSON_DIR, f"{doc_id}_submitted.json")
+            if not os.path.exists(self.config.SUBMITTED_JSON_DIR):
+                os.makedirs(self.config.SUBMITTED_JSON_DIR)
+            with open(archive_path, 'w', encoding='utf-8') as af:
+                json.dump(etda_json, af, ensure_ascii=False, indent=2)
+            logger.info(f"Archived submission payload to {archive_path}")
+        except Exception as ae:
+            logger.warning(f"Failed to archive submission payload: {ae}")
+
         try:
             response = requests.post(
                 url,

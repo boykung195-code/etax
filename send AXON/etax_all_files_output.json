@@ -1,0 +1,173 @@
+[
+  {
+    "ET_INVOICE_HDR": [
+      {
+        "TAX_REGISTER_TYPE": "01",
+        "E_TAX_PARTICIPATE": "Y",
+        "COMPANY": 100403,
+        "OPERATION_CODE": "ชื่อสาขา 00003",
+        "DOC_NUMBER": 680361000962,
+        "DOC_DATE": "01122568",
+        "CV_CODE": 1400001,
+        "BILL_NAME": "บจก.ไดนามิคทรานสปอร์ต",
+        "SEQ_OPER_NAME": "สำนักงานใหญ่",
+        "BILL_TAX_ID": 105532115191,
+        "BILL_BRANCH_CODE": 0,
+        "BILL_ADDRESS1": "3 อาคาร ซี.พี.ทาวเวอร์ 2 (ฟอร์จูนทาวน์) ชั้น19 โซน C ,D2 ถ.รัชดาภิเษก แขวงดินแดง เขตดินแดง กรุงเทพฯ 10400",
+        "COM_NAME_LOCAL": "บริษัท แอ๊ดว้านซ์ทรานสปอร์ต จำกัด",
+        "COM_ADDRESS1": "61/2  ม.2  ต.ธารเกษม  อ.พระพุทธบาท  จ.สระบุรี  18120",
+        "COM_ADDRESS2": "1 อาคาร ซี.พี.ทาวเวอร์ 2 (ฟอร์จูนทาวน์) ชั้นที่ 19โซน D1 ถ.รัชดาภิเษก เขต/แขวง ดินแดง จ.กรุงเทพฯ 10400",
+        "NETT_AMT": 131024.3,
+        "TAX_AMT": 8571.68,
+        "NETT_AMT_WITHOUT": 122452.62,
+        "REMARK_TEXT1": 680361000962
+      }
+    ],
+    "ET_INVOICE_DTL": [
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 1,
+        "PRODUCT_NAME": "680381002829_น้ำมันดีเซล (AT)_77-505210",
+        "COSTPRICE_QTY": 155,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 4820.5
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 2,
+        "PRODUCT_NAME": "680381002830_น้ำมันดีเซล (AT)_78-764310",
+        "COSTPRICE_QTY": 135,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 4198.5
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 3,
+        "PRODUCT_NAME": "680381002831_น้ำมันดีเซล (AT)_79-434910",
+        "COSTPRICE_QTY": 230,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 7153.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 4,
+        "PRODUCT_NAME": "680381002832_น้ำมันดีเซล (AT)_76-400410",
+        "COSTPRICE_QTY": 156,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 4851.6
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 5,
+        "PRODUCT_NAME": "680381002833_น้ำมันดีเซล (AT)_64-855910",
+        "COSTPRICE_QTY": 344,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 10698.4
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 6,
+        "PRODUCT_NAME": "680381002834_น้ำมันดีเซล (AT)_77-465310",
+        "COSTPRICE_QTY": 146,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 4540.6
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 7,
+        "PRODUCT_NAME": "680381002835_น้ำมันดีเซล (AT)_69-944610",
+        "COSTPRICE_QTY": 350,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 10885.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 8,
+        "PRODUCT_NAME": "680381002836_น้ำมันดีเซล (AT)_79-191310",
+        "COSTPRICE_QTY": 294,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 9143.4
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 9,
+        "PRODUCT_NAME": "680381002838_น้ำมันดีเซล (AT)_63-308910",
+        "COSTPRICE_QTY": 300,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 9330.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 10,
+        "PRODUCT_NAME": "680381002839_น้ำมันดีเซล (AT)_64-750810",
+        "COSTPRICE_QTY": 350,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 10885.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 11,
+        "PRODUCT_NAME": "680381002840_น้ำมันดีเซล (AT)_78-297010",
+        "COSTPRICE_QTY": 275,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 8552.5
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 12,
+        "PRODUCT_NAME": "680381002842_น้ำมันดีเซล (AT)_700-802510",
+        "COSTPRICE_QTY": 298,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 9267.8
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 13,
+        "PRODUCT_NAME": "680381002843_น้ำมันดีเซล (AT)_75-506610",
+        "COSTPRICE_QTY": 250,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 7775.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 14,
+        "PRODUCT_NAME": "680381002845_น้ำมันดีเซล (AT)_69-950910",
+        "COSTPRICE_QTY": 300,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 9330.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 15,
+        "PRODUCT_NAME": "680381002847_น้ำมันดีเซล (AT)_63-353910",
+        "COSTPRICE_QTY": 350,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 10885.0
+      },
+      {
+        "COMPANY": 100403,
+        "DOC_NUMBER": "680361000962",
+        "EXT_NUMBER": 16,
+        "PRODUCT_NAME": "680381002850_น้ำมันดีเซล (AT)_65-669610",
+        "COSTPRICE_QTY": 280,
+        "GROSS_PRODUCT": 31.1,
+        "TOTAL_NET_PRODUCT": 8708.0
+      }
+    ]
+  }
+]

@@ -1,0 +1,35 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environments
+.env
+.venv
+env/
+venv/
+ENV/
+
+# VS Code
+.vscode/
+
+# Project specific data/temp
+etax_data/
+test_JSON/
+DOC/
+*.pdf
+*.xlsx
+*.csv
+!TemplateEtax.csv
+temp_transaction.csv
+Processed_Etax.csv
+etax_export.csv
+etax_export.json
+etax_export.xlsx
+testpass_etax_export_*.xlsx
+ตัวอย่างเพิ่มหนี้ลดหนี้_ACC.xlsx
+รายงานใบเติมน้ำมัน.csv
+รายงานใบเติมน้ำมัน.xlsx
+รายงานใบเติมน้ำมัน3ใบTEST.xlsx
+รายงานใบเติมน้ำมัน962.xlsx
+สร้าง e-Tax Invoice XML.html

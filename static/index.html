@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ETAX PROCESSOR | Advance Transport</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #8e44ad;
+            --accent: #9b59b6;
+            --success: #27ae60;
+            --bg: #0f0c29;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --text-main: #ffffff;
+            --text-dim: #b0b0b0;
+            --border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 3rem;
+            animation: fadeInDown 0.8s ease-out;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            font-weight: 600;
+            background: linear-gradient(to right, #fff, #9b59b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            color: var(--text-dim);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            font-size: 0.9rem;
+        }
+
+        .upload-section {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            padding: 3rem;
+            text-align: center;
+            transition: transform 0.3s ease, border-color 0.3s ease;
+            margin-bottom: 2rem;
+        }
+
+        .upload-section:hover {
+            border-color: var(--accent);
+            transform: translateY(-5px);
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--border);
+            border-radius: 16px;
+            padding: 3rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone.active {
+            border-color: var(--accent);
+            background: rgba(155, 89, 182, 0.1);
+        }
+
+        .drop-zone p {
+            font-size: 1.2rem;
+            color: var(--text-dim);
+        }
+
+        .drop-zone span {
+            display: block;
+            margin-top: 1rem;
+            font-size: 0.8rem;
+            opacity: 0.6;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .status-container {
+            margin-top: 2rem;
+            display: none;
+        }
+
+        .progress-bar {
+            height: 6px;
+            background: var(--border);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 1rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .results-section {
+            display: none;
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 2rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+            letter-spacing: 1px;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: scale(1.05);
+        }
+
+        .table-container {
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            overflow-x: auto;
+            max-height: 800px;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 1600px;
+        }
+
+        th {
+            background: rgba(0, 0, 0, 0.3);
+            text-align: left;
+            padding: 1.2rem;
+            font-size: 0.8rem;
+            color: var(--text-dim);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+
+        td {
+            padding: 1.2rem;
+            border-bottom: 1px solid var(--border);
+            font-size: 0.9rem;
+            color: var(--text-dim);
+        }
+
+        tr:hover td {
+            background: rgba(255, 255, 255, 0.02);
+            color: var(--text-main);
+        }
+
+        .status-badge {
+            padding: 0.4rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .status-match {
+            background: rgba(39, 174, 96, 0.2);
+            color: #2ecc71;
+        }
+
+        .status-missing {
+            background: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .seller-card {
+            background: linear-gradient(135deg, rgba(142, 68, 173, 0.2), rgba(41, 128, 185, 0.2));
+            border: 1px solid var(--accent);
+            border-radius: 16px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+        }
+
+        .seller-icon {
+            font-size: 2.5rem;
+            background: var(--accent);
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+        }
+
+        .seller-info h3 {
+            font-size: 1.2rem;
+            margin-bottom: 0.2rem;
+        }
+
+        .seller-info p {
+            font-size: 0.85rem;
+            color: var(--text-dim);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--accent);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>ETAX PROCESSOR</h1>
+            <p>Advance Transport Co., Ltd.</p>
+        </header>
+
+        <section class="upload-section">
+            <div class="drop-zone" id="drop-zone">
+                <p>Drag & drop billing report (CSV or Excel) here</p>
+                <span>or click to browse your files</span>
+                <input type="file" id="file-input" accept=".csv, .xlsx, .xls">
+            </div>
+
+            <div class="status-container" id="status-container">
+                <div id="status-text">Processing your data...</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progress-fill"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="results-section" id="results-section">
+            <div class="actions">
+                <h2>Processed Results</h2>
+                <div style="display: flex; gap: 1rem;">
+                    <button class="btn" id="clear-btn"
+                        style="margin-top: 0; background: var(--border); color: var(--text-main);">Clear Data</button>
+                    <button class="btn" id="save-excel-btn" style="margin-top: 0; background: #27ae60;">Save to
+                        Excel</button>
+                    <button class="btn" id="save-csv-btn" style="margin-top: 0; background: var(--accent);">Save to
+                        CSV</button>
+                    <button class="btn" id="export-btn" style="margin-top: 0; background: var(--success);">Export to
+                        JSON</button>
+                </div>
+            </div>
+            <div class="table-container">
+                <table id="results-table">
+                    <thead></thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const dropZone = document.getElementById('drop-zone');
+        const fileInput = document.getElementById('file-input');
+        const statusContainer = document.getElementById('status-container');
+        const resultsSection = document.getElementById('results-section');
+        const resultsBody = document.getElementById('results-body');
+        const resultsTable = document.getElementById('results-table');
+        const progressFill = document.getElementById('progress-fill');
+
+        let lastProcessedData = [];
+
+        dropZone.addEventListener('click', () => fileInput.click());
+
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.classList.add('active');
+        });
+
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('active'));
+
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('active');
+            if (e.dataTransfer.files.length) handleFileUpload(e.dataTransfer.files[0]);
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length) handleFileUpload(e.target.files[0]);
+        });
+
+        async function handleFileUpload(file) {
+            const formData = new FormData();
+            formData.append('file', file);
+
+            statusContainer.style.display = 'block';
+            resultsSection.style.display = 'none';
+            progressFill.style.width = '30%';
+
+            try {
+                const response = await fetch('/upload', { method: 'POST', body: formData });
+                progressFill.style.width = '100%';
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    lastProcessedData = result.data;
+                    displayResults(result.data);
+                    resultsSection.style.display = 'block';
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('Connection Error: ' + error.message);
+            } finally {
+                setTimeout(() => { statusContainer.style.display = 'none'; progressFill.style.width = '0%'; }, 1000);
+            }
+        }
+
+        function displayResults(data) {
+            if (data.length === 0) return;
+
+            // Extract dynamic headers from first row
+            const headers = Object.keys(data[0]);
+            const thead = resultsTable.querySelector('thead');
+            thead.innerHTML = '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+
+            // Seller Summary Card (Dynamic from first row)
+            const first = data[0];
+            const existingSummary = document.getElementById('seller-summary');
+            if (existingSummary) existingSummary.remove();
+
+            const summary = document.createElement('div');
+            summary.className = 'seller-card';
+            summary.id = 'seller-summary';
+            summary.innerHTML = `
+                <div class="seller-icon">🏢</div>
+                <div class="seller-info" style="flex-grow: 1">
+                    <p style="text-transform: uppercase; font-size: 0.7rem; color: var(--accent); font-weight: 600">Seller Information (ผู้ขาย)</p>
+                    <h3>${first['ชื่อบริษัท'] || 'N/A'}</h3>
+                    <p>${first['ที่อยู่บริษัท'] || 'N/A'}</p>
+                </div>
+                <div style="text-align: right; border-left: 1px solid var(--border); padding-left: 2rem;">
+                    <p style="font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase">Tax Identification</p>
+                    <p style="color: var(--success); font-weight: 600; font-size: 1.1rem">${first['เลขประจำตัวผู้เสียภาษีของบริษัท'] || 'N/A'}</p>
+                    <p style="font-size: 0.6rem; color: var(--text-dim); text-transform: uppercase; margin-top: 0.5rem">Branch No.</p>
+                    <p style="font-family: monospace; letter-spacing: 2px">${first['ชื่อสาขา_บริษัท'] || 'N/A'}</p>
+                </div>
+            `;
+            resultsSection.insertBefore(summary, resultsSection.firstChild);
+
+            resultsBody.innerHTML = data.map(row => {
+                return '<tr>' + headers.map(h => {
+                    let content = row[h];
+                    if (h === 'สถานะการจับคู่') {
+                        const statusClass = content === 'Full Match' ? 'status-match' : 'status-missing';
+                        return `<td><span class="status-badge ${statusClass}">${content}</span></td>`;
+                    }
+                    if (h === 'ชื่อลูกค้า' && content === 'Missing Master Data') {
+                        return `<td style="color: #e74c3c; font-weight: 600">${content}<br><span style="font-size: 0.7rem; opacity: 0.7">ID: ${row['รหัสลูกค้า']}</span></td>`;
+                    }
+                    return `<td>${content || ''}</td>`;
+                }).join('') + '</tr>';
+            }).join('');
+        }
+
+        document.getElementById('export-btn').addEventListener('click', async () => {
+            if (lastProcessedData.length === 0) return;
+            const btn = document.getElementById('export-btn');
+            btn.innerText = 'Exporting...'; btn.disabled = true;
+            try {
+                const response = await fetch('/export', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(lastProcessedData) });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `etax_export_${Date.now()}.json`;
+                    document.body.appendChild(a); a.click(); a.remove();
+                } else {
+                    const errData = await response.json();
+                    const errMsg = errData.message || (errData.detail ? JSON.stringify(errData.detail) : response.statusText);
+                    alert('Export failed: ' + errMsg);
+                }
+            } catch (error) { alert('Export error: ' + error.message); console.error(error); }
+            finally { btn.innerText = 'Export to JSON'; btn.disabled = false; }
+        });
+
+        document.getElementById('save-csv-btn').addEventListener('click', async () => {
+            if (lastProcessedData.length === 0) return;
+            const btn = document.getElementById('save-csv-btn');
+            btn.innerText = 'Saving...'; btn.disabled = true;
+            try {
+                const response = await fetch('/export-csv', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastProcessedData)
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `etax_export_${Date.now()}.csv`;
+                    document.body.appendChild(a); a.click(); a.remove();
+                } else {
+                    const errData = await response.json();
+                    const errMsg = errData.message || (errData.detail ? JSON.stringify(errData.detail) : response.statusText);
+                    alert('CSV Export failed: ' + errMsg);
+                }
+            } catch (error) { alert('CSV Export error: ' + error.message); console.error(error); }
+            finally { btn.innerText = 'Save to CSV'; btn.disabled = false; }
+        });
+
+        document.getElementById('save-excel-btn').addEventListener('click', async () => {
+            if (lastProcessedData.length === 0) return;
+            const btn = document.getElementById('save-excel-btn');
+            const originalText = btn.innerText;
+            btn.innerText = 'Saving...'; btn.disabled = true;
+            try {
+                const response = await fetch('/export-excel', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(lastProcessedData)
+                });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const url = window.URL.createObjectURL(blob);
+                    const a = document.createElement('a'); a.href = url; a.download = `etax_export_${Date.now()}.xlsx`;
+                    document.body.appendChild(a); a.click(); a.remove();
+                } else {
+                    const errData = await response.json();
+                    const errMsg = errData.message || (errData.detail ? JSON.stringify(errData.detail) : response.statusText);
+                    alert('Excel Export failed: ' + errMsg);
+                }
+            } catch (error) { alert('Excel Export error: ' + error.message); console.error(error); }
+            finally { btn.innerText = originalText; btn.disabled = false; }
+        });
+
+        document.getElementById('clear-btn').addEventListener('click', () => {
+            lastProcessedData = [];
+            resultsBody.innerHTML = '';
+            const summaryContainer = document.getElementById('seller-summary');
+            if (summaryContainer) summaryContainer.remove();
+            resultsSection.style.display = 'none';
+            fileInput.value = '';
+        });
+    </script>
+</body>
+
+</html>

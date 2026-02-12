@@ -3,7 +3,7 @@ import logging
 from API_AXONS import AxonsETaxService
 
 # Setup logging to see what's happening
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.DEBUG)
 
 def test_e2e_single():
     service = AxonsETaxService()

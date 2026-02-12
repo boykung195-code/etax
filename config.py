@@ -41,16 +41,12 @@ class Config:
     )
 
     # --- Seller (Company) Info ---
-    SELLER_TAX_ID = os.getenv("SELLER_TAX_ID", "0105519004951")
-    SELLER_NAME = os.getenv("SELLER_NAME", "บริษัท แอ๊ดว้านซ์ทรานสปอร์ต จำกัด")
+    SELLER_TAX_ID = os.getenv("SELLER_TAX_ID", "0105545070345")
+    SELLER_NAME = os.getenv("SELLER_NAME", "บริษัท ซีพีเอฟ โกลบอล ฟู้ด โซลูชั่น จำกัด (มหาชน)")
     SELLER_BRANCH = os.getenv("SELLER_BRANCH", "00000")
 
     # --- Submit API Endpoints ---
-    SUBMIT_ENDPOINTS = {
-        "taxinvoice": "/api/v1/submit/taxinvoice",
-        "creditnote": "/api/v1/submit/creditnote",
-        "debitnote": "/api/v1/submit/debitnote",
-    }
+    SUBMIT_ENDPOINT = "/api/v1/document/submit"
     STATUS_ENDPOINT = "/api/v1/document/status"
     CANCEL_ENDPOINT = "/api/v1/document/cancel"
 
